@@ -15,14 +15,10 @@ def create_app(config_object="settings"):
     app.run(host="0.0.0.0")
     app.config.from_object(config_object)
 
-    register_extensions(app)
     register_api_routes(api)
+    register_extensions(app)
 
-    with app.app_context():
-
-        db.create_all()
-
-        return app
+    return app
 
 
 def register_extensions(app):
