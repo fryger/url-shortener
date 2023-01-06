@@ -11,7 +11,6 @@ class User(db.Model):
 
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    username = Column(String(64), index=True, unique=True, nullable=False)
     email = Column(String(80), index=True, unique=True, nullable=False)
     password = Column(String(500), nullable=False)
     created = Column(DateTime, default=datetime.datetime.utcnow, nullable=True)
@@ -21,16 +20,15 @@ class User(db.Model):
         The function takes in a dictionary of keyword arguments and assigns the values to the class
         attributes
         """
-        self.username = kwargs.get("username")
         self.email = kwargs.get("email")
         self.password = kwargs.get("password")
 
     def __repr__(self):
         """
         The __repr__ function is used to return a string representation of the object
-        :return: The username of the user.
+        :return: The email of the user.
         """
-        return "<User {}>".format(self.username)
+        return "<User {}>".format(self.email)
 
     def hash_password(self):
         """

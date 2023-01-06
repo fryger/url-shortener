@@ -1,4 +1,3 @@
-import json
 import jwt
 import datetime
 from extensions import db
@@ -14,6 +13,7 @@ from users.validation import (
     ResetPasswordInputSchema,
 )
 from utils.http_code import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from flask import current_app
 
 
 def create_user(request, input_data):
@@ -28,15 +28,10 @@ def create_user(request, input_data):
     errors = create_validation_schema.validate(input_data)
     if errors:
         return generate_response(message=errors)
-    check_username_exist = User.query.filter_by(
-        username=input_data.get("username")
-    ).first()
+
     check_email_exist = User.query.filter_by(email=input_data.get("email")).first()
-    if check_username_exist:
-        return generate_response(
-            message="Username already exist", status=HTTP_400_BAD_REQUEST
-        )
-    elif check_email_exist:
+
+    if check_email_exist:
         return generate_response(
             message="Email  already taken", status=HTTP_400_BAD_REQUEST
         )
@@ -72,10 +67,9 @@ def login_user(request, input_data):
             {
                 "id": get_user.id,
                 "email": get_user.email,
-                "username": get_user.username,
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
             },
-            environ.get("SECRET_KEY"),
+            current_app.config["SECRET_KEY"],
         )
         input_data["token"] = token
         return generate_response(

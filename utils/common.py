@@ -2,6 +2,7 @@ import os
 import jwt
 from datetime import datetime, timedelta, timezone
 from utils.http_code import HTTP_200_OK, HTTP_201_CREATED
+from flask import current_app
 
 
 def generate_response(data=None, message=None, status=400):
@@ -61,7 +62,7 @@ class TokenGenerator:
             "exp": datetime.now(timezone.utc) + timedelta(days=1),
             "id": str(user.id),
         }
-        token = jwt.encode(payload, os.environ.get("SECRET_KEY"), algorithm="HS256")
+        token = jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
         return token
 
     @staticmethod
@@ -73,7 +74,7 @@ class TokenGenerator:
         """
         return jwt.decode(
             token,
-            os.environ.get("SECRET_KEY"),
+            current_app.config["SECRET_KEY"],
             algorithms="HS256",
             options={"require_exp": True},
         )
@@ -88,7 +89,7 @@ class TokenGenerator:
         try:
             jwt.decode(
                 token,
-                os.environ.get("SECRET_KEY"),
+                current_app.config["SECRET_KEY"],
                 algorithms="HS256",
                 options={"require_exp": True},
             )
@@ -105,7 +106,7 @@ class TokenGenerator:
         """
         data = jwt.decode(
             token,
-            os.environ.get("SECRET_KEY"),
+            current_app.config["SECRET_KEY"],
             algorithms="HS256",
             options={"require_exp": True},
         )
