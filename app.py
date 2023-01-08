@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from users.routes import authentication_routes
+from shortener.routes import shortener_routes
 
 from extensions import db, mail, migrate, api, jwt
 
@@ -35,5 +36,8 @@ def register_extensions(app):
 
 def register_api_routes(api):
     """Register Flask API routes."""
+
     authentication_routes(api)
+    shortener_routes(api)
+
     return None
