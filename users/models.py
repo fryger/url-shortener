@@ -1,11 +1,9 @@
 import datetime
 from flask_bcrypt import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, String, DateTime, Integer
 from extensions import db
 
 
-# The User class is a data model for user accounts
 class User(db.Model):
     """Data model for user accounts."""
 
