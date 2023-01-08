@@ -3,7 +3,7 @@ from flask_cors import CORS
 
 from users.routes import authentication_routes
 
-from extensions import db, mail, migrate, api
+from extensions import db, mail, migrate, api, jwt
 
 
 def create_app(config_object="settings"):
@@ -28,6 +28,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     mail.init_app(app)
     api.init_app(app)
+    jwt.init_app(app)
 
     return None
 

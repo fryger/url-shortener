@@ -1,5 +1,5 @@
 from flask_mail import Message
-from utils.common import TokenGenerator
+from flask_jwt_extended import create_access_token
 from extensions import mail
 from flask import current_app
 
@@ -14,7 +14,7 @@ def send_forgot_password_email(request, user):
     mail_subject = "Reset your password"
     domain = current_app.config["API_URL"]
     uid = user.id
-    token = TokenGenerator.encode_token(user)
+    token = create_access_token(identity={"id": user.id, "email": user.email})
     msg = Message(
         mail_subject,
         sender=current_app.config["EMAIL_HOST_USER"],

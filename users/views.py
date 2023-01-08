@@ -7,6 +7,7 @@ from users.service import (
     login_user,
     reset_password,
 )
+from werkzeug.datastructures import Headers
 
 
 class SignUpApi(Resource):
@@ -53,5 +54,11 @@ class ResetPassword(Resource):
         :return: JSON object
         """
         input_data = request.get_json()
+
+        request.headers = Headers(
+            {k: v for k, v in request.headers.items()}
+            | {"Authorization": f"Bearer {token}"}
+        )
+
         response, status = reset_password(request, input_data, token)
         return make_response(response, status)

@@ -1,11 +1,13 @@
-import jwt
-import datetime
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    verify_jwt_in_request,
+)
 from extensions import db
-from os import environ
 from users.helper import send_forgot_password_email
 from users.models import User
 from flask_bcrypt import generate_password_hash
-from utils.common import generate_response, TokenGenerator
+from utils.common import generate_response
 from users.validation import (
     CreateLoginInputSchema,
     CreateResetPasswordEmailSendInputSchema,
@@ -13,7 +15,6 @@ from users.validation import (
     ResetPasswordInputSchema,
 )
 from utils.http_code import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
-from flask import current_app
 
 
 def create_user(request, input_data):
@@ -63,17 +64,13 @@ def login_user(request, input_data):
     if get_user is None:
         return generate_response(message="User not found", status=HTTP_400_BAD_REQUEST)
     if get_user.check_password(input_data.get("password")):
-        token = jwt.encode(
-            {
-                "id": get_user.id,
-                "email": get_user.email,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
-            },
-            current_app.config["SECRET_KEY"],
+
+        token = create_access_token(
+            identity={"id": get_user.id, "email": get_user.email}
         )
-        input_data["token"] = token
+        return_data = {"access_token": token}
         return generate_response(
-            data=input_data, message="User login successfully", status=HTTP_201_CREATED
+            data=return_data, message="User login successfully", status=HTTP_201_CREATED
         )
     else:
         return generate_response(
@@ -115,7 +112,8 @@ def reset_password(request, input_data, token):
             message="Token is required!",
             status=HTTP_400_BAD_REQUEST,
         )
-    token = TokenGenerator.decode_token(token)
+    verify_jwt_in_request()
+    token = get_jwt_identity()
     user = User.query.filter_by(id=token.get("id")).first()
     if user is None:
         return generate_response(
