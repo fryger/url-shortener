@@ -4,3 +4,4 @@ MAIL_SERVER = "localhost"
 MAIL_PORT = 25
 API_URL = "localhost:5000"
 EMAIL_HOST_USER = "APP"
+PROPAGATE_EXCEPTIONS = True
