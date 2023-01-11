@@ -4,11 +4,16 @@ from users.models import User
 from utils.common import generate_response
 from shortener.validation import CreateShortUrlInputSchema
 
-from utils.http_code import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from utils.http_code import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_204_NO_CONTENT,
+)
 
 from flask_jwt_extended import get_jwt_identity
 
-from typing import Union
+from typing import Union, List
 
 
 def create_short_url(request, input_data):
@@ -55,4 +60,21 @@ def create_short_url(request, input_data):
         data=current_url.to_dict(),
         message="Url already in database.",
         status=HTTP_200_OK,
+    )
+
+
+def list_short_url(request):
+
+    user_token = get_jwt_identity()
+    user = User.query.filter_by(id=user_token.get("id")).first()
+
+    user_urls: Union[List[Url], None] = Url.query.filter_by(user=user).all()
+
+    if not user_urls:
+        return generate_response(
+            message="No shortened urls", status=HTTP_204_NO_CONTENT
+        )
+
+    return generate_response(
+        data=[url.to_dict() for url in user_urls], status=HTTP_200_OK
     )
