@@ -4,13 +4,12 @@ from flask_cors import CORS
 from users.routes import authentication_routes
 from shortener.routes import shortener_routes
 
-from extensions import db, mail, migrate, api, jwt
+from extensions import db, mail, migrate, api, jwt, cors
 
 
 def create_app(config_object="settings"):
 
     app = Flask(__name__)
-    CORS(app)
 
     app.debug = True
     app.run(host="0.0.0.0")
@@ -25,6 +24,7 @@ def create_app(config_object="settings"):
 def register_extensions(app):
     """Register Flask extensions."""
 
+    cors.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
