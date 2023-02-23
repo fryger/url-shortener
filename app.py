@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_cors import CORS
 
 from users.routes import authentication_routes
 from shortener.routes import shortener_routes
