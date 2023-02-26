@@ -4,7 +4,8 @@ from flask_jwt_extended import (
     get_jwt_identity,
     verify_jwt_in_request,
 )
-from extensions import db
+
+from extensions import db, jwt
 from users.helper import send_forgot_password_email
 from users.models import User
 from flask_bcrypt import generate_password_hash
@@ -15,7 +16,14 @@ from users.validation import (
     CreateSignupInputSchema,
     ResetPasswordInputSchema,
 )
-from utils.http_code import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from utils.http_code import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+)
+
+import datetime
 
 
 def create_user(request, input_data):
@@ -73,7 +81,9 @@ def login_user(request, input_data):
 
         access_token = create_access_token(identity=user_identity, fresh=True)
 
-        refresh_token = create_refresh_token(identity=user_identity)
+        refresh_token = create_refresh_token(
+            identity=user_identity, expires_delta=datetime.timedelta(seconds=10)
+        )
 
         return_data = {"access_token": access_token, "refresh_token": refresh_token}
 
@@ -97,6 +107,16 @@ def refresh_token(request, input_data):
     return generate_response(
         data=return_data, message="Access token refreshed", status=HTTP_201_CREATED
     )
+
+
+@jwt.expired_token_loader
+def my_expired_token_callback(jwt_header, jwt_payload):
+    return generate_response(message="Token has expired", status=HTTP_401_UNAUTHORIZED)
+
+
+@jwt.invalid_token_loader
+def my_invalid_token_callback(callback_msg):
+    return generate_response(message=callback_msg, status=HTTP_400_BAD_REQUEST)
 
 
 def reset_password_email_send(request, input_data):
