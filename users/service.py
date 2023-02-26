@@ -1,5 +1,6 @@
 from flask_jwt_extended import (
     create_access_token,
+    create_refresh_token,
     get_jwt_identity,
     verify_jwt_in_request,
 )
@@ -57,18 +58,25 @@ def login_user(request, input_data):
     """
     create_validation_schema = CreateLoginInputSchema()
     errors = create_validation_schema.validate(input_data)
+
     if errors:
         return generate_response(message=errors)
 
     get_user = User.query.filter_by(email=input_data.get("email")).first()
+
     if get_user is None:
         return generate_response(message="User not found", status=HTTP_400_BAD_REQUEST)
+
     if get_user.check_password(input_data.get("password")):
 
-        token = create_access_token(
-            identity={"id": get_user.id, "email": get_user.email}
-        )
-        return_data = {"access_token": token}
+        user_identity = {"id": get_user.id, "email": get_user.email}
+
+        access_token = create_access_token(identity=user_identity, fresh=True)
+
+        refresh_token = create_refresh_token(identity=user_identity)
+
+        return_data = {"access_token": access_token, "refresh_token": refresh_token}
+
         return generate_response(
             data=return_data, message="User login successfully", status=HTTP_201_CREATED
         )
@@ -76,6 +84,19 @@ def login_user(request, input_data):
         return generate_response(
             message="Password is wrong", status=HTTP_400_BAD_REQUEST
         )
+
+
+def refresh_token(request, input_data):
+
+    identity = get_jwt_identity()
+
+    access_token = create_access_token(identity=identity, fresh=False)
+
+    return_data = {"access_token": access_token}
+
+    return generate_response(
+        data=return_data, message="Access token refreshed", status=HTTP_201_CREATED
+    )
 
 
 def reset_password_email_send(request, input_data):

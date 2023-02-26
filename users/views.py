@@ -6,7 +6,9 @@ from users.service import (
     reset_password_email_send,
     login_user,
     reset_password,
+    refresh_token,
 )
+from flask_jwt_extended import jwt_required
 from werkzeug.datastructures import Headers
 
 
@@ -61,4 +63,17 @@ class ResetPassword(Resource):
         )
 
         response, status = reset_password(request, input_data, token)
+        return make_response(response, status)
+
+
+class RefreshToken(Resource):
+    @staticmethod
+    @jwt_required(refresh=True)
+    def post() -> Response:
+        """
+        POST response method for login user.
+        :return: JSON object
+        """
+        input_data = request.get_json()
+        response, status = refresh_token(request, input_data)
         return make_response(response, status)
